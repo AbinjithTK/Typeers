@@ -124,6 +124,8 @@ export const App = () => {
     fullMessage: string;
     brandLink: string | null;
   } | null>(null);
+  // Ref mirror of goldenChallenge to avoid stale closures in Phaser callbacks
+  const goldenChallengeRef = useRef<typeof goldenChallenge>(null);
   const [vaultItems, setVaultItems] = useState<{
     id: string;
     reward: { type: string; value: string; description: string };
@@ -207,6 +209,9 @@ export const App = () => {
     // Auto-start if this is a golden challenge post
     autoStartGoldenChallenge();
   }, []);
+
+  // Keep goldenChallengeRef in sync with state (avoids stale closures in Phaser callbacks)
+  useEffect(() => { goldenChallengeRef.current = goldenChallenge; }, [goldenChallenge]);
 
   // Client-side expiry: filter out expired golden challenges every 30s
   useEffect(() => {
@@ -419,6 +424,18 @@ export const App = () => {
       setPhaserGame(null);
     }
 
+    // Record golden challenge play FIRST — must happen before anything else
+    // to enforce once-per-user even if subsequent calls fail
+    const gc = goldenChallengeRef.current;
+    if (gc) {
+      try {
+        await trpc.golden.recordPlay.mutate({ challengeId: gc.id, completed: data.completed });
+        setGoldenAlreadyPlayed(true); // immediately block replay in UI
+      } catch (e) {
+        console.error('Failed to record golden play:', e);
+      }
+    }
+
     // Submit score to backend
     try {
       const result = await trpc.game.submitScore.mutate({ score: data.score });
@@ -452,38 +469,37 @@ export const App = () => {
           console.error('Failed to record UGC play:', e);
         }
       }
-
-      // Record golden challenge play if applicable
-      if (goldenChallenge) {
-        try {
-          await trpc.golden.recordPlay.mutate({ challengeId: goldenChallenge.id, completed: data.completed });
-        } catch (e) {
-          console.error('Failed to record golden play:', e);
-        }
-      }
       
       // Reload leaderboard and stats
       await loadLeaderboard();
       await loadUserBest();
       await loadUserStats();
       await loadTournamentInfo();
-      // Preload vault if rewards were collected
-      if (goldenChallenge) {
-        await loadVault();
-      }
     } catch (err) {
       console.error('Failed to submit score:', err);
     }
-  }, [phaserGame, currentUgcLevel, goldenChallenge]);
+
+    // Load vault outside the score try/catch — must happen even if score submission fails
+    if (gc) {
+      try {
+        await loadVault();
+      } catch (e) {
+        console.error('Failed to load vault:', e);
+      }
+    }
+  }, [phaserGame, currentUgcLevel]);
 
   const handleRewardFound = useCallback(async (data: RewardFoundData) => {
-    if (!goldenChallenge) return;
+    // goldenChallengeRef avoids stale closure — goldenChallenge state may not
+    // be updated yet when Phaser fires this callback in the same render cycle
+    const gc = goldenChallengeRef.current;
+    if (!gc) return;
     // Resolve the shuffled word index back to the original reward index
-    const originalWordIndex = goldenChallenge.rewardMap[data.wordIndex];
+    const originalWordIndex = gc.rewardMap[data.wordIndex];
     if (originalWordIndex === undefined) return;
     try {
       const result = await trpc.golden.claimReward.mutate({
-        challengeId: goldenChallenge.id,
+        challengeId: gc.id,
         wordIndex: data.wordIndex,
         originalWordIndex,
       });
@@ -495,7 +511,7 @@ export const App = () => {
     } catch (err) {
       console.error('Failed to claim reward:', err);
     }
-  }, [goldenChallenge]);
+  }, []);
 
   const handleCountdownComplete = useCallback(() => {
     // Countdown finished — enable typing by removing readOnly
