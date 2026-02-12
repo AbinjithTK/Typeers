@@ -137,7 +137,7 @@ export const App = () => {
   const [goldenChallenges, setGoldenChallenges] = useState<{
     id: string; title: string; brandName: string; wordCount: number;
     rewardCount: number; tier: string; claimCount: number; maxClaims: number;
-    expiresAt: number;
+    expiresAt: number; hideRewardCount: boolean;
   }[]>([]);
   // Golden challenge creation form
   const [gcTitle, setGcTitle] = useState('');
@@ -149,7 +149,7 @@ export const App = () => {
   const [gcDuration, setGcDuration] = useState(7);
   const [gcPublishing, setGcPublishing] = useState(false);
   const [gcBrandLink, setGcBrandLink] = useState('');
-  const [purchasing, setPurchasing] = useState(false);
+  const [gcHideRewardCount, setGcHideRewardCount] = useState(false);  const [purchasing, setPurchasing] = useState(false);
   const [tokenBalance, setTokenBalance] = useState<{ golden: number; diamond: number; legendary: number }>({ golden: 0, diamond: 0, legendary: 0 });
   const [isGoldenCreator, setIsGoldenCreator] = useState(false);
   const [goldenDashboard, setGoldenDashboard] = useState<{
@@ -828,6 +828,7 @@ export const App = () => {
     setGcDuration(7);
     setGcPublishing(false);
     setGcBrandLink('');
+    setGcHideRewardCount(false);
     loadTokenBalance();
     setGameState('golden-create');
   };
@@ -859,6 +860,7 @@ export const App = () => {
         maxClaims: gcMaxClaims,
         durationDays: gcDuration,
         brandLink: gcBrandLink.trim() || undefined,
+        hideRewardCount: gcTier === 'legendary' ? gcHideRewardCount : undefined,
       });
       if (!result.success) {
         setError(result.message);
@@ -1226,7 +1228,7 @@ export const App = () => {
               <div className="space-y-1 text-[6px]">
                 <p><span className="text-[#ffd700]">✨ GOLDEN</span> <span className="text-gray-500">— 15 words, 3 rewards, 7 days</span></p>
                 <p><span className="text-[#00bcd4]">💎 DIAMOND</span> <span className="text-gray-500">— 25 words, 6 rewards, 30 days + brand link</span></p>
-                <p><span className="text-[#ff4500]">🔥 LEGENDARY</span> <span className="text-gray-500">— 30 words, 10 rewards, 90 days + affiliate links</span></p>
+                <p><span className="text-[#ff4500]">🔥 LEGENDARY</span> <span className="text-gray-500">— 30 words, 10 rewards, 90 days + affiliate links + hide reward count</span></p>
               </div>
             </div>
 
@@ -1441,7 +1443,7 @@ export const App = () => {
                         <p className="text-[8px] text-[#ffd700] truncate">
                           {gc.tier === 'diamond' ? '💎' : gc.tier === 'legendary' ? '🔥' : '✨'} {gc.title}
                         </p>
-                        <p className="text-[6px] text-gray-500">by {gc.brandName} · {gc.wordCount} words · {gc.rewardCount} rewards</p>
+                        <p className="text-[6px] text-gray-500">by {gc.brandName} · {gc.wordCount} words · {gc.hideRewardCount ? '??? rewards' : `${gc.rewardCount} rewards`}</p>
                       </div>
                       <div className="text-right ml-2 flex-shrink-0">
                         <p className="text-[6px] text-gray-400">{gc.claimCount}/{gc.maxClaims}</p>
@@ -2042,6 +2044,7 @@ export const App = () => {
                     // Clear affiliate links if not legendary
                     if (t !== 'legendary') {
                       setGcRewards(gcRewards.map(({ affiliateLink: _, ...rest }) => rest));
+                      setGcHideRewardCount(false);
                     }
                   }}
                     className={`flex-1 py-2 text-[6px] border-2 transition-colors ${gcTier === t ? 'bg-[#ffd700] text-black border-[#ffd700]' : 'bg-[#111] text-gray-400 border-gray-700'}`}>
@@ -2065,6 +2068,19 @@ export const App = () => {
                   maxLength={500}
                   className="w-full px-3 py-2 bg-[#111] border-2 border-gray-700 focus:border-[#00bcd4] text-[#00bcd4] text-[9px] outline-none" style={{ fontFamily: '"Press Start 2P", monospace', fontSize: '16px' }} />
                 <p className="text-[5px] text-gray-600 mt-1">UTM TRACKING AUTO-APPENDED · CLICKS TRACKED IN DASHBOARD</p>
+              </div>
+            )}
+
+            {/* Hide reward count toggle (legendary only) */}
+            {gcTier === 'legendary' && (
+              <div className="flex items-center gap-2 py-1">
+                <button
+                  onClick={() => setGcHideRewardCount(!gcHideRewardCount)}
+                  className={`w-8 h-4 rounded-full transition-colors flex items-center ${gcHideRewardCount ? 'bg-[#ffd700] justify-end' : 'bg-gray-700 justify-start'}`}
+                >
+                  <div className="w-3 h-3 rounded-full bg-white mx-0.5" />
+                </button>
+                <span className="text-[7px] text-gray-400">HIDE REWARD COUNT FROM PLAYERS</span>
               </div>
             )}
 

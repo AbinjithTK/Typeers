@@ -430,6 +430,7 @@ export const appRouter = t.router({
         maxClaims: z.number().int().min(1).max(10000).default(100),
         durationDays: z.number().int().min(1).max(90).default(7),
         brandLink: z.string().url().max(500).optional(),
+        hideRewardCount: z.boolean().optional(),
       }))
       .mutation(async ({ input }) => {
         const username = await reddit.getCurrentUsername();
@@ -476,15 +477,40 @@ export const appRouter = t.router({
         // Original reward indices from the challenge creator
         const originalRewardIndices = Object.keys(challenge.rewardWords).map(Number);
         const rewardCount = originalRewardIndices.length;
+        const wordCount = challenge.words.length;
 
-        // Shuffle: pick `rewardCount` random positions from all word indices each play.
-        const allIndices = challenge.words.map((_, i) => i);
-        const shuffled = [...allIndices].sort(() => Math.random() - 0.5);
-        const shuffledRewardIndices = shuffled.slice(0, rewardCount);
+        // Weighted shuffle: rewards are biased toward the latter portion of the word list.
+        // ~70% of rewards land in the back half, ~30% in the front half.
+        // This keeps players engaged through the entire challenge.
+        const frontHalf = Array.from({ length: Math.floor(wordCount / 2) }, (_, i) => i);
+        const backHalf = Array.from({ length: wordCount - Math.floor(wordCount / 2) }, (_, i) => i + Math.floor(wordCount / 2));
+
+        // Determine how many go in back vs front
+        const backCount = Math.min(backHalf.length, Math.max(1, Math.round(rewardCount * 0.7)));
+        const frontCount = Math.min(frontHalf.length, rewardCount - backCount);
+
+        // Shuffle each half independently, then pick from each
+        const shuffledBack = [...backHalf].sort(() => Math.random() - 0.5);
+        const shuffledFront = [...frontHalf].sort(() => Math.random() - 0.5);
+
+        const shuffledRewardIndices = [
+          ...shuffledFront.slice(0, frontCount),
+          ...shuffledBack.slice(0, backCount),
+        ];
+
+        // If we still need more (edge case: not enough in one half), fill from the other
+        if (shuffledRewardIndices.length < rewardCount) {
+          const used = new Set(shuffledRewardIndices);
+          const remaining = Array.from({ length: wordCount }, (_, i) => i).filter(i => !used.has(i));
+          const extra = remaining.sort(() => Math.random() - 0.5).slice(0, rewardCount - shuffledRewardIndices.length);
+          shuffledRewardIndices.push(...extra);
+        }
 
         const rewardMap: Record<number, number> = {};
+        // Shuffle the original indices too so reward assignment is random
+        const shuffledOriginals = [...originalRewardIndices].sort(() => Math.random() - 0.5);
         shuffledRewardIndices.forEach((shuffledIdx, i) => {
-          rewardMap[shuffledIdx] = originalRewardIndices[i]!;
+          rewardMap[shuffledIdx] = shuffledOriginals[i]!;
         });
 
         return {
@@ -499,6 +525,7 @@ export const appRouter = t.router({
             fullMessage: challenge.words.join(' '),
             status: challenge.status,
             brandLink: challenge.brandLink ?? null,
+            hideRewardCount: challenge.hideRewardCount ?? false,
           },
           isGolden: true,
           hasPlayed: alreadyPlayed,

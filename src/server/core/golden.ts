@@ -26,6 +26,7 @@ export interface GoldenChallenge {
   tier: 'golden' | 'diamond' | 'legendary';
   postId?: string;
   brandLink?: string;       // diamond + legendary — shown after game completion
+  hideRewardCount?: boolean; // legendary only — hides reward count from players
 }
 
 export interface VaultItem {
@@ -50,6 +51,7 @@ export interface GoldenChallengeSummary {
   maxClaims: number;
   status: string;
   expiresAt: number;
+  hideRewardCount: boolean;
 }
 
 // ── Redis Keys ─────────────────────────────────────────────────────────────
@@ -104,6 +106,7 @@ export async function createGoldenChallenge(opts: {
   durationDays: number;
   subredditName: string;
   brandLink?: string;        // diamond + legendary only
+  hideRewardCount?: boolean;  // legendary only — hides reward count from players
 }): Promise<{ success: boolean; message: string; challengeId?: string; postId?: string }> {
   try {
     const creatorName = await reddit.getCurrentUsername();
@@ -186,6 +189,7 @@ export async function createGoldenChallenge(opts: {
       status: 'pending', // needs mod approval
       tier: opts.tier,
       brandLink,
+      hideRewardCount: opts.tier === 'legendary' ? (opts.hideRewardCount ?? false) : false,
     };
 
     // Save challenge
@@ -538,6 +542,7 @@ function toSummary(c: GoldenChallenge): GoldenChallengeSummary {
     maxClaims: c.maxClaims,
     status: c.status,
     expiresAt: c.expiresAt,
+    hideRewardCount: c.hideRewardCount ?? false,
   };
 }
 
