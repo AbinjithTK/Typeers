@@ -1,37 +1,74 @@
 # ⌨️ Typeers
 
-A fast-paced typing game built natively on Reddit using Devvit. Type fast, beat the clock, and climb the leaderboard!
+A Reddit-powered speed typing game — type fast, beat the clock, and climb the leaderboard.
 
 ![Typeers Game](public/typeersicon.png)
 
 ## 🎮 What is Typeers?
 
-Typeers is a retro arcade-style typing game where players race against the clock to type words correctly. What makes it unique is that the content comes directly from Reddit — words are pulled from subreddit posts, comments, and community-created levels.
+Typeers is a retro arcade-style typing game built natively on Reddit using Devvit. Words come directly from Reddit — pulled from subreddit posts, comments, and community-created levels. It features golden challenges with real rewards, weekly tournaments, and a full creator economy.
 
-### Features
+### Core Features
 
 - **Multiple Game Modes**
   - Daily Challenge with consistent word sets
   - Category-based levels (Reddit, Tech, Animals, Gaming, Space)
   - Community Words pulled from your subreddit's top posts
-  - Weekly Tournaments with competitive rankings
+  - User-generated custom levels from posts and comments
+
+- **Weekly Tournaments**
+  - Automated Monday-to-Sunday competitive cycles
+  - Auto-pinned tournament posts with distinguished styling
+  - Full tournament dashboard with current + previous week stats
+  - Cron-scheduled creation via Devvit scheduler
 
 - **User-Generated Content**
-  - Create custom levels from any post or comment
-  - Browse and play community-created levels
-  - Rate and remix levels from other players
-  - Creator leaderboards and achievement badges
+  - Create custom levels from any post or comment via menu actions
+  - In-game level editor with word list builder
+  - Browse, play, rate, and remix community levels
+  - Creator leaderboards, stats, and profile pages
 
 - **Progression System**
   - Real-time daily leaderboards
-  - Persistent stats tracking (streaks, WPM, accuracy, all-time bests)
-  - Combo multipliers and time bonuses
-  - Personal records and achievements
+  - Persistent stats (streaks, WPM, accuracy, all-time bests)
+  - Combo multipliers (up to 5x) and time bonuses
+  - Personal records and score sharing via comments
 
-- **Retro Aesthetic**
-  - Classic arcade visuals with particle effects
-  - Procedurally generated sound effects
-  - Smooth 60fps gameplay powered by Phaser 3
+### ✨ Golden Challenges (Gamified Advertising)
+
+A tiered sponsored challenge system where brands/creators embed hidden rewards inside typing challenges. Players type words to discover and claim rewards.
+
+- **Three Tiers:**
+  - 🥇 Golden — 15 words, 3 rewards, 100 claims, 7-day duration
+  - 💎 Diamond — 25 words, 6 rewards, 500 claims, 30 days, brand link with click tracking
+  - 🏆 Legendary — 30 words, 10 rewards, 2000 claims, 90 days, brand link + per-reward affiliate links
+
+- **Reward Types:** Coupons, secrets, giveaways, messages
+- **Once-Per-User:** Each player can only play a golden challenge once
+- **Reward Words:** Special words trigger particle effects and animations when typed
+- **Shuffled Delivery:** Reward words are randomized each play for fairness
+- **Player Vault:** Claimed rewards stored in a personal vault with redeem tracking
+
+- **Creator Dashboard:** Challenge analytics (plays, completions, claims, claim rate), link click counts, affiliate tracking
+- **Payment Bridge:** Reddit Gold purchases via `products.json` → token credits → challenge creation. Supports purchase, fulfillment, and refund flows.
+
+### 🛡️ Mod Approval System
+
+Golden challenges require moderator approval before going live. Approval uses Reddit's native menu actions (not in-game UI):
+
+1. Creator purchases a tier token via Reddit Gold
+2. Creator fills out the in-game creation form (title, brand, words, rewards, links)
+3. Challenge enters "pending" status
+4. Moderators click "🛡️ Manage Golden Challenges" from the subreddit menu
+5. A native Reddit form shows all pending/active challenges with approve/reject options
+6. On approval, a custom post is auto-created for the challenge
+
+### 📱 Mobile Support
+
+- Keyboard timing fix: keyboard appears only when typing starts (after countdown), not during 3-2-1-GO
+- `readOnly` input during countdown, switches to editable on `onCountdownComplete` callback
+- Aggressive refocus interval to keep mobile keyboard open during gameplay
+- Touch-friendly UI with appropriately sized tap targets
 
 ## 🚀 Installation
 
@@ -40,11 +77,9 @@ Typeers is a retro arcade-style typing game where players race against the clock
 1. Visit the [Devvit Apps Directory](https://developers.reddit.com/apps)
 2. Search for "Typeers"
 3. Click "Install" and select your subreddit
-4. The app will create an initial game post automatically
+4. The app creates an initial game post and tournament automatically
 
-### Manual Installation
-
-If you're a moderator and want to install directly:
+### Direct Install
 
 ```bash
 devvit install typeers <your-subreddit>
@@ -52,112 +87,121 @@ devvit install typeers <your-subreddit>
 
 ## 📖 How to Use
 
-### Playing the Game
+### Playing
 
-1. Click on any Typeers post in your subreddit
-2. Click "PLAY NOW" to start
-3. Type the words that appear on screen as fast as you can
+1. Click any Typeers post in your subreddit
+2. Hit "PLAY NOW"
+3. Type the words as fast as you can
 4. Build combos for bonus points and extra time
-5. Complete all words before time runs out!
+5. Complete all words before time runs out
 
 ### Creating Custom Levels
 
-**From a Comment:**
-1. Find any comment with interesting words
-2. Click the three dots menu (⋯)
-3. Select "🎮 Create Typeers Level"
-4. A new game post will be created with words from that comment
+- **From a Comment:** Three dots menu → "🎮 Create Typeers Level"
+- **From a Post:** Three dots menu → "⌨️ Create Typeers Level from Post"
+- **In-Game Editor:** Use the level creator to build custom word lists
 
-**From a Post:**
-1. Open any post in your subreddit
-2. Click the three dots menu (⋯)
-3. Select "⌨️ Create Typeers Level from Post"
-4. Words will be extracted from the post title and body
+### Golden Challenges
 
-**Custom Level (In-Game):**
-- Use the in-game level creator to build your own word lists
-- Share your creations with the community
-- Browse and play levels from other creators
+1. Open the game menu → "✨ CREATE GOLDEN CHALLENGE"
+2. Purchase a tier token (Golden/Diamond/Legendary) via Reddit Gold
+3. Fill in title, brand name, words, reward words with descriptions
+4. Diamond/Legendary: add brand link and affiliate links
+5. Submit for mod approval → once approved, a post is created automatically
 
-### Starting a Weekly Tournament
+### Moderator Actions
 
-Moderators can start weekly tournaments:
-
-1. Go to your subreddit
-2. Click "Mod Tools" → "Community Apps"
-3. Find Typeers and click "🏆 Start Weekly Tournament"
-4. A pinned tournament post will be created automatically
+- **Create Typeers Post** — Create a new game post (subreddit menu, mod-only)
+- **Start Weekly Tournament** — Create and pin a tournament post (subreddit menu, mod-only)
+- **Manage Golden Challenges** — Review, approve, or reject golden challenges (subreddit menu, mod-only)
+- **Create Level from Comment/Post** — Turn any content into a typing challenge (available to all users)
 
 ## 🛠️ Tech Stack
 
-- **[Devvit](https://developers.reddit.com/)** - Reddit's developer platform
-- **[Phaser 3](https://phaser.io/)** - Game engine for rendering and physics
-- **[React](https://react.dev/)** - UI components
-- **[TypeScript](https://www.typescriptlang.org/)** - Type safety
-- **[Hono](https://hono.dev/)** - Backend routing
-- **[tRPC](https://trpc.io/)** - Type-safe API calls
-- **[Redis](https://redis.io/)** - Leaderboards and persistent storage
-- **[Vite](https://vite.dev/)** - Build tooling
+| Technology | Purpose |
+|---|---|
+| [Devvit](https://developers.reddit.com/) | Reddit's developer platform |
+| [Phaser 3](https://phaser.io/) | Game engine (rendering, particles, animations) |
+| [React](https://react.dev/) | UI components and state management |
+| [TypeScript](https://www.typescriptlang.org/) | Type safety across client and server |
+| [Hono](https://hono.dev/) | Backend HTTP routing |
+| [tRPC](https://trpc.io/) | Type-safe API layer |
+| [Redis](https://redis.io/) | Leaderboards, game state, analytics |
+| [Vite](https://vite.dev/) | Build tooling |
+| [Vitest](https://vitest.dev/) | Testing |
 
 ## 🎯 Game Mechanics
 
 - **Starting Time:** 10 seconds
 - **Time per Word:** +3 seconds (scales with word length)
-- **Combo System:** Chain correct words for multipliers (2x, 3x, 4x, 5x max)
-- **Time Bonus:** Extra points for completing words quickly
-- **Accuracy:** Mistakes break your combo and cost time
+- **Combo System:** Chain correct words for 2x → 3x → 4x → 5x multipliers
+- **Time Bonus:** Extra points for fast completions
+- **Accuracy:** Mistakes break combos and cost time
+- **Reward Words:** Golden challenge words trigger particle effects and reward claims
 
-## 🏆 Leaderboards
+## 🏗️ Project Structure
 
-- **Daily Leaderboard:** Resets every day at midnight UTC
-- **Weekly Tournament:** Runs Monday to Sunday, best score counts
-- **Creator Leaderboard:** Top level creators by plays and ratings
-- **Personal Stats:** Track your progress over time
+```
+typeers/
+├── src/
+│   ├── game.tsx              # Main game UI (React)
+│   ├── splash.tsx            # Splash/loading screen
+│   ├── game/
+│   │   ├── FastTyperGame.ts  # Phaser game logic
+│   │   ├── config.ts         # Phaser configuration
+│   │   └── index.ts          # Game module entry
+│   ├── server/
+│   │   ├── index.ts          # Hono server setup
+│   │   ├── trpc.ts           # tRPC router (all API routes)
+│   │   ├── context.ts        # Request context
+│   │   ├── core/
+│   │   │   ├── game.ts       # Word generation, scoring, stats
+│   │   │   ├── golden.ts     # Golden challenges, rewards, payments, analytics
+│   │   │   ├── tournament.ts # Weekly tournaments
+│   │   │   ├── levels.ts     # UGC levels, gallery, ratings
+│   │   │   ├── post.ts       # Post creation
+│   │   │   └── count.ts      # Counter utilities
+│   │   └── routes/
+│   │       ├── menu.ts       # Menu actions + mod approval forms
+│   │       ├── payments.ts   # Reddit Gold fulfill/refund handlers
+│   │       ├── scheduler.ts  # Cron tasks (weekly tournament)
+│   │       └── triggers.ts   # App install trigger
+│   ├── products.json         # Reddit Gold product definitions
+│   ├── trpc.ts               # Client-side tRPC setup
+│   └── transformer.ts        # SuperJSON transformer
+├── devvit.json               # Devvit app configuration
+├── public/                   # Static assets
+└── tools/                    # TypeScript configs
+```
 
 ## 🔧 Development
 
 ### Prerequisites
 
 - Node.js 22+
-- Reddit account connected to [Reddit Developers](https://developers.reddit.com/)
+- Reddit account on [Reddit Developers](https://developers.reddit.com/)
 
 ### Setup
 
 ```bash
-# Clone the repository
-git clone <your-repo-url>
+git clone https://github.com/AbinjithTK/Typeers.git
 cd typeers
-
-# Install dependencies
 npm install
-
-# Login to Reddit
-npm run login
-
-# Start development server
+npx devvit login
 npm run dev
 ```
 
 ### Commands
 
-- `npm run dev` - Start playtest server
-- `npm run build` - Build client and server
-- `npm run deploy` - Upload and publish new version
-- `npm run test` - Run test suite
-- `npm run lint` - Lint code
-- `npm run type-check` - TypeScript validation
-
-## 📝 Publishing Updates
-
-1. Make your changes and test locally with `npm run dev`
-2. Build the project: `npm run build`
-3. Upload the new version: `npm run deploy`
-4. The app will be submitted for Reddit review
-5. Once approved, it will be available to all installations
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit issues or pull requests.
+| Command | Description |
+|---|---|
+| `npm run dev` | Start playtest server |
+| `npm run build` | Build client and server |
+| `npm run type-check` | TypeScript validation |
+| `npm run test` | Run test suite |
+| `npm run lint` | Lint code |
+| `npx devvit upload` | Upload new version |
+| `npx devvit publish` | Publish to Reddit |
 
 ## 📄 License
 
@@ -167,23 +211,8 @@ BSD-3-Clause
 
 - [Devvit Documentation](https://developers.reddit.com/docs)
 - [Devvit Community](https://www.reddit.com/r/Devvit)
-- [Report Issues](https://github.com/your-repo/issues)
-
-## 💡 Tips for Players
-
-- Focus on accuracy over speed at first
-- Build combos for maximum points
-- Watch the timer — time management is key
-- Practice with different categories to improve
-- Create your own levels to challenge friends
-
-## 🎨 Customization
-
-Moderators can customize the game experience:
-- Create themed word packs from subreddit content
-- Host weekly tournaments with custom rules
-- Feature top players in community posts
-- Build level collections for special events
+- [GitHub Repository](https://github.com/AbinjithTK/Typeers)
+- [Report Issues](https://github.com/AbinjithTK/Typeers/issues)
 
 ---
 
