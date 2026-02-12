@@ -1,0 +1,103 @@
+{
+  "$schema": "https://developers.reddit.com/schema/config-file.v1.json",
+  "name": "typeers",
+  "post": {
+    "dir": "dist/client",
+    "entrypoints": {
+      "default": {
+        "inline": true,
+        "entry": "src/splash.html"
+      },
+      "game": {
+        "entry": "src/game.html"
+      }
+    }
+  },
+  "media": {
+    "dir": "public"
+  },
+  "server": {
+    "dir": "dist/server",
+    "entry": "index.cjs"
+  },
+  "menu": {
+    "items": [
+      {
+        "label": "Create Typeers Post",
+        "description": "Create a new Typeers typing game post",
+        "location": "subreddit",
+        "forUserType": "moderator",
+        "endpoint": "/internal/menu/post-create"
+      },
+      {
+        "label": "🎮 Create Typeers Level",
+        "description": "Turn this comment into a typing challenge!",
+        "location": "comment",
+        "endpoint": "/internal/menu/create-level-from-comment"
+      },
+      {
+        "label": "🏆 Start Weekly Tournament",
+        "description": "Create and pin this week's tournament post",
+        "location": "subreddit",
+        "forUserType": "moderator",
+        "endpoint": "/internal/menu/start-tournament"
+      },
+      {
+        "label": "⌨️ Create Typeers Level from Post",
+        "description": "Turn this post into a typing challenge level!",
+        "location": "post",
+        "endpoint": "/internal/menu/create-level-from-post"
+      },
+      {
+        "label": "🛡️ Manage Golden Challenges",
+        "description": "Review, approve, or reject golden challenges",
+        "location": "subreddit",
+        "forUserType": "moderator",
+        "endpoint": "/internal/menu/manage-golden-challenges"
+      }
+    ]
+  },
+  "permissions": {
+    "reddit": {
+      "enable": true,
+      "asUser": [
+        "SUBMIT_POST",
+        "SUBMIT_COMMENT",
+        "SUBSCRIBE_TO_SUBREDDIT"
+      ]
+    },
+    "redis": true,
+    "payments": true
+  },
+  "forms": {
+    "goldenChallengeAction": "/internal/menu/golden-challenge-action"
+  },
+  "payments": {
+    "productsFile": "./src/products.json",
+    "endpoints": {
+      "fulfillOrder": "/internal/payments/fulfill",
+      "refundOrder": "/internal/payments/refund"
+    }
+  },
+  "triggers": {
+    "onAppInstall": "/internal/triggers/on-app-install"
+  },
+  "scheduler": {
+    "tasks": {
+      "weekly-tournament": {
+        "endpoint": "/internal/scheduler/weekly-tournament",
+        "cron": "0 0 * * 1"
+      }
+    }
+  },
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "vite build"
+  },
+  "dev": {
+    "subreddit": "typeers_dev"
+  },
+  "marketingAssets": {
+    "icon": "public/typeersicon.png"
+  }
+}
