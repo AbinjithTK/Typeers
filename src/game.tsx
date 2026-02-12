@@ -858,6 +858,16 @@ export const App = () => {
       setError('Add at least 1 reward');
       return;
     }
+    // Validate reward fields
+    for (const r of gcRewards) {
+      if (!r.value.trim()) { setError('All rewards need a hidden value (code/secret)'); return; }
+      if (!r.description.trim()) { setError('All rewards need a description'); return; }
+    }
+    // Clamp to tier limits
+    const tierLimits = { golden: { c: 100, d: 7 }, diamond: { c: 500, d: 30 }, legendary: { c: 2000, d: 90 } }[gcTier];
+    const clampedClaims = Math.max(1, Math.min(tierLimits.c, gcMaxClaims));
+    const clampedDuration = Math.max(1, Math.min(tierLimits.d, gcDuration));
+
     setGcPublishing(true);
     setError(null);
     try {
@@ -868,13 +878,13 @@ export const App = () => {
         rewards: gcRewards.map(r => ({
           wordIndex: r.wordIndex,
           type: r.type as 'coupon' | 'secret' | 'giveaway' | 'message',
-          value: r.value,
-          description: r.description,
+          value: r.value.trim(),
+          description: r.description.trim(),
           affiliateLink: r.affiliateLink?.trim() || undefined,
         })),
         tier: gcTier,
-        maxClaims: gcMaxClaims,
-        durationDays: gcDuration,
+        maxClaims: clampedClaims,
+        durationDays: clampedDuration,
         brandLink: gcBrandLink.trim() || undefined,
         hideRewardCount: gcTier === 'legendary' ? gcHideRewardCount : undefined,
       });
@@ -886,9 +896,10 @@ export const App = () => {
       setGcPublishing(false);
       setError(null);
       setGameState('menu');
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to create golden challenge:', err);
-      setError('Failed to create golden challenge');
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg.includes('invalid') || msg.includes('url') ? 'Check your links — they must be valid URLs (e.g. https://example.com)' : `Failed to create: ${msg.slice(0, 100)}`);
       setGcPublishing(false);
     }
   };

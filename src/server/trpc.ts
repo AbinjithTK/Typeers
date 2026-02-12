@@ -424,12 +424,23 @@ export const appRouter = t.router({
           type: z.enum(['coupon', 'secret', 'giveaway', 'message']),
           value: z.string().min(1).max(200),
           description: z.string().min(1).max(100),
-          affiliateLink: z.string().url().max(500).optional(),
+          affiliateLink: z.string().max(500).optional().transform(v => {
+            if (!v || !v.trim()) return undefined;
+            const trimmed = v.trim();
+            // Auto-prefix https:// if missing protocol
+            if (!/^https?:\/\//i.test(trimmed)) return `https://${trimmed}`;
+            return trimmed;
+          }),
         })).min(1).max(10),
         tier: z.enum(['golden', 'diamond', 'legendary']).default('golden'),
         maxClaims: z.number().int().min(1).max(10000).default(100),
         durationDays: z.number().int().min(1).max(90).default(7),
-        brandLink: z.string().url().max(500).optional(),
+        brandLink: z.string().max(500).optional().transform(v => {
+          if (!v || !v.trim()) return undefined;
+          const trimmed = v.trim();
+          if (!/^https?:\/\//i.test(trimmed)) return `https://${trimmed}`;
+          return trimmed;
+        }),
         hideRewardCount: z.boolean().optional(),
       }))
       .mutation(async ({ input }) => {

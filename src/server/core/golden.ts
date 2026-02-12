@@ -149,7 +149,10 @@ export async function createGoldenChallenge(opts: {
 
       // Affiliate links — legendary only
       if (limits.affiliateLinks && r.affiliateLink?.trim()) {
-        reward.affiliateLink = r.affiliateLink.trim().slice(0, 500);
+        const aLink = r.affiliateLink.trim().slice(0, 500);
+        if (/^https?:\/\/.+/i.test(aLink)) {
+          reward.affiliateLink = aLink;
+        }
       }
 
       rewardWords[r.wordIndex] = reward;
@@ -171,7 +174,11 @@ export async function createGoldenChallenge(opts: {
     // Brand link — diamond + legendary only
     let brandLink: string | undefined;
     if (limits.brandLink && opts.brandLink?.trim()) {
-      brandLink = opts.brandLink.trim().slice(0, 500);
+      const link = opts.brandLink.trim().slice(0, 500);
+      // Validate it looks like a URL
+      if (/^https?:\/\/.+/i.test(link)) {
+        brandLink = link;
+      }
     }
 
     const challenge: GoldenChallenge = {
