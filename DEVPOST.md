@@ -25,6 +25,52 @@ Typeers is a retro-styled typing game that lives natively inside Reddit as a Dev
 - **User-Generated Levels** — Create 3–15 word challenges via in-app editor, or instantly turn any post/comment into a level via context menu. Browse, play, rate (1–5 stars), and remix in the gallery
 - **Golden Challenges** — Brand-sponsored challenges where creators purchase tokens ($25/$100/$500 via Reddit Gold), write a message split into words, and attach hidden rewards (coupons, secrets, giveaways) to specific positions. Reward positions shuffle each play to prevent cheating. Requires mod approval, once-per-user play, with a personal reward vault
 
+## Golden Challenges — Gamified Marketing That Actually Works
+
+Traditional digital advertising is dying. Banner blindness is real. People scroll past ads, skip pre-rolls, and install blockers. The marketing industry has oversaturated every channel — pop-ups, sponsored posts, influencer deals — until audiences are numb to all of it. When everyone is shouting, nobody listens.
+
+Golden Challenges flip the script entirely. Instead of interrupting users, brands become part of the game. A brand writes a message — their tagline, a product name, a campaign slogan — and it gets split into the words players type. Hidden among those words are real rewards: discount codes, giveaway entries, secret links. Players don't skip the message. They type every single word of it, letter by letter, under time pressure, with full focus. That's not an impression — that's deep engagement.
+
+### Why This Works
+
+The psychology is simple: people remember what they actively do, not what they passively see. Typing a brand's message word by word at speed creates muscle memory and cognitive imprinting that no banner ad can match. Players aren't just exposed to the message — they physically reproduce it. And because rewards are hidden at random positions (weighted toward the end via our shuffle algorithm), players are motivated to complete the entire challenge, not just skim the first few words.
+
+### Targeting Communities, Not Demographics
+
+Reddit is organized by interest. Subreddits are self-selected communities of passionate people. A gaming peripheral brand can drop a Golden Challenge in r/MechanicalKeyboards. A coffee brand can target r/Coffee. A coding bootcamp can reach r/learnprogramming. This isn't broad demographic targeting — it's precision community engagement where the audience already cares about the product category.
+
+### The Tier System
+
+Golden Challenges come in three tiers, purchased with Reddit Gold:
+
+| | Golden ($0.99) | Diamond ($4.99) | Legendary ($19.99) |
+|---|---|---|---|
+| Words | Up to 15 | Up to 25 | Up to 30 |
+| Rewards | Up to 3 | Up to 6 | Up to 10 |
+| Max Claims | 100 | 500 | 2,000 |
+| Duration | 7 days | 30 days | 90 days |
+| Brand Link | ✗ | ✓ | ✓ |
+| Affiliate Links | ✗ | ✗ | ✓ |
+| Hide Reward Count | ✗ | ✗ | ✓ |
+
+Legendary tier unlocks the ability to hide how many rewards exist — players see "??? rewards" and are driven to play and share because the mystery itself becomes the hook. Affiliate links on rewards enable direct conversion tracking.
+
+### How Communities Benefit
+
+This isn't just brands extracting attention. Communities grow through sponsorship. A brand running a Golden Challenge in a subreddit brings visibility, engagement, and real value (discounts, giveaways) to that community's members. Moderators approve every challenge before it goes live, keeping quality high and spam out. The community stays in control.
+
+### Built-In Analytics
+
+Creators get a full dashboard: total plays, completion rates, reward claims, brand link clicks, affiliate conversions — all tracked with UTM parameters. This isn't guesswork marketing. Every interaction is measurable, and the data flows back to the creator in real time.
+
+### The Weighted Shuffle
+
+Reward positions aren't purely random. Our algorithm places ~70% of rewards in the back half of the word sequence and ~30% in the front. This means players type through most of the brand message before finding rewards — maximizing message exposure while keeping the game fair and exciting. Combined with once-per-user play enforcement, every play is genuine engagement.
+
+### The Bigger Picture
+
+Gamified marketing through community games is the next evolution. As traditional methods lose effectiveness, brands need to earn attention instead of buying it. Golden Challenges turn advertising into entertainment, messages into gameplay, and passive viewers into active participants. The brand gets deep engagement. The player gets rewards. The community gets sponsored content that's actually fun. Everyone wins.
+
 ## How We Built It
 
 ### Client
