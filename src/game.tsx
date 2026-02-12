@@ -477,26 +477,26 @@ export const App = () => {
   }, [goldenChallenge]);
 
   const handleCountdownComplete = useCallback(() => {
-    // Focus the hidden input when countdown finishes — this is when the player needs to type
+    // Countdown finished — enable typing by removing readOnly
     setKeyboardReady(true);
-    // Multiple focus attempts to reliably trigger mobile keyboard
-    // React needs time to re-render (remove readOnly) before focus works
-    const focusAttempts = [50, 100, 200, 400];
-    focusAttempts.forEach(delay => {
-      setTimeout(() => {
-        if (inputRef.current) {
-          inputRef.current.readOnly = false;
-          inputRef.current.focus();
-          inputRef.current.click();
-        }
-      }, delay);
-    });
+    if (inputRef.current) {
+      inputRef.current.readOnly = false;
+    }
   }, []);
 
   const initializeGame = useCallback(async (words: string[], goldenData?: {
     rewardIndices: number[];
     isGolden: boolean;
   }) => {
+    // CRITICAL: Focus the input NOW during the user's tap gesture.
+    // Mobile browsers only allow keyboard to appear from a direct user interaction.
+    // We set readOnly=true so keystrokes during countdown are ignored,
+    // then remove readOnly when countdown finishes via handleCountdownComplete.
+    if (inputRef.current) {
+      inputRef.current.readOnly = true;
+      inputRef.current.focus();
+    }
+
     setGameState('playing');
     
     // Wait for container to be available with retry logic
@@ -856,7 +856,8 @@ export const App = () => {
 
   const handleVirtualInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const char = e.target.value.slice(-1);
-    if (char && phaserGame && gameModuleRef.current) {
+    // Only forward input to Phaser after countdown finishes (keyboardReady)
+    if (char && keyboardReady && phaserGame && gameModuleRef.current) {
       const scene = phaserGame.scene.getScene('FastTyperGame') as InstanceType<typeof gameModuleRef.current.FastTyperGame>;
       scene?.handleVirtualInput(char);
     }
@@ -880,21 +881,23 @@ export const App = () => {
 
   // Keep input focused during gameplay only
   useEffect(() => {
-    if (gameState === 'playing') {
+    if (gameState === 'playing' && keyboardReady) {
       // Aggressively refocus on mobile to keep keyboard open
-      // The initial focus happens via onCountdownComplete callback
       const interval = setInterval(() => {
-        if (gameState === 'playing' && document.activeElement !== inputRef.current) {
+        if (document.activeElement !== inputRef.current) {
           inputRef.current?.focus();
         }
       }, 300);
       return () => clearInterval(interval);
-    } else {
+    } else if (gameState !== 'playing') {
       // Ensure keyboard is closed when not playing
       setKeyboardReady(false);
+      if (inputRef.current) {
+        inputRef.current.readOnly = true;
+      }
       inputRef.current?.blur();
     }
-  }, [gameState]);
+  }, [gameState, keyboardReady]);
 
   // Cleanup game on unmount
   useEffect(() => {
@@ -916,7 +919,7 @@ export const App = () => {
         autoCorrect="off"
         inputMode="text"
         enterKeyHint="go"
-        readOnly={gameState === 'playing' && !keyboardReady}
+        readOnly
         className="fixed top-0 left-0 w-full opacity-0 h-10 z-50"
         style={{ fontSize: '16px', caretColor: 'transparent' }}
         onChange={handleVirtualInput}
@@ -1601,7 +1604,7 @@ export const App = () => {
         <div
           ref={gameContainerRef}
           className="w-full"
-          style={{ height: '100dvh', minHeight: '100vh', touchAction: 'manipulation' }}
+          style={{ height: '100vh', touchAction: 'manipulation', position: 'fixed', top: 0, left: 0 }}
           onClick={() => { if (keyboardReady) inputRef.current?.focus(); }}
         />
       )}

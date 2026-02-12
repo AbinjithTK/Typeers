@@ -13,7 +13,7 @@ export const createGameConfig = (
   backgroundColor: '#1a1a1b',
   scene: [FastTyperGame],
   scale: {
-    mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH,
+    mode: Phaser.Scale.NONE,
+    autoCenter: Phaser.Scale.CENTER_HORIZONTALLY,
   },
 });
