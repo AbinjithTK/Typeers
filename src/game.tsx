@@ -479,8 +479,18 @@ export const App = () => {
   const handleCountdownComplete = useCallback(() => {
     // Focus the hidden input when countdown finishes — this is when the player needs to type
     setKeyboardReady(true);
-    // Small delay to let React re-render (remove readOnly) before focusing
-    setTimeout(() => inputRef.current?.focus(), 16);
+    // Multiple focus attempts to reliably trigger mobile keyboard
+    // React needs time to re-render (remove readOnly) before focus works
+    const focusAttempts = [50, 100, 200, 400];
+    focusAttempts.forEach(delay => {
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.readOnly = false;
+          inputRef.current.focus();
+          inputRef.current.click();
+        }
+      }, delay);
+    });
   }, []);
 
   const initializeGame = useCallback(async (words: string[], goldenData?: {
@@ -905,10 +915,17 @@ export const App = () => {
         autoCapitalize="characters"
         autoCorrect="off"
         inputMode="text"
+        enterKeyHint="go"
         readOnly={gameState === 'playing' && !keyboardReady}
         className="fixed top-0 left-0 w-full opacity-0 h-10 z-50"
-        style={{ fontSize: '16px' }}
+        style={{ fontSize: '16px', caretColor: 'transparent' }}
         onChange={handleVirtualInput}
+        onBlur={() => {
+          // Re-focus immediately if game is active — prevents keyboard from closing
+          if (gameState === 'playing' && keyboardReady) {
+            setTimeout(() => inputRef.current?.focus(), 10);
+          }
+        }}
       />
 
       {error && (
@@ -1583,8 +1600,8 @@ export const App = () => {
       {gameState === 'playing' && (
         <div
           ref={gameContainerRef}
-          className="w-full h-screen"
-          style={{ minHeight: '100vh', touchAction: 'manipulation' }}
+          className="w-full"
+          style={{ height: '100dvh', minHeight: '100vh', touchAction: 'manipulation' }}
           onClick={() => { if (keyboardReady) inputRef.current?.focus(); }}
         />
       )}

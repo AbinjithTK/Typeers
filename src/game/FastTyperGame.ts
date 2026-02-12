@@ -320,8 +320,12 @@ export class FastTyperGame extends Phaser.Scene {
   create() {
     const { width, height } = this.cameras.main;
     const centerX = width / 2;
-    const wordY = this.isMobile ? height * 0.25 : height * 0.45;
-    const wordFontSize = this.isMobile ? '20px' : '28px';
+    // On mobile, keyboard takes ~40% of screen — position content in upper portion
+    const wordY = this.isMobile ? height * 0.22 : height * 0.45;
+    // Scale word font based on screen width so it doesn't get tiny
+    const wordFontSize = this.isMobile
+      ? `${Math.max(22, Math.min(32, Math.floor(width / 12)))}px`
+      : '28px';
 
     this.cameras.main.setBackgroundColor('#0a0a0a');
 
@@ -330,7 +334,7 @@ export class FastTyperGame extends Phaser.Scene {
     // Score
     this.scoreText = this.add.text(width - 15, 15, 'SCORE 0', {
       fontFamily: PIXEL_FONT,
-      fontSize: this.isMobile ? '10px' : '14px',
+      fontSize: this.isMobile ? '12px' : '14px',
       color: '#00ff00',
       stroke: '#003300',
       strokeThickness: 1,
@@ -339,23 +343,23 @@ export class FastTyperGame extends Phaser.Scene {
     // Progress
     this.progressText = this.add.text(15, 15, '', {
       fontFamily: PIXEL_FONT,
-      fontSize: this.isMobile ? '10px' : '14px',
+      fontSize: this.isMobile ? '12px' : '14px',
       color: '#888888',
     });
 
-    // Timer text (seconds remaining)
-    this.timerText = this.add.text(centerX, this.isMobile ? height - 18 : height - 28, '', {
+    // Timer text (seconds remaining) — positioned below the ring on mobile
+    this.timerText = this.add.text(centerX, this.isMobile ? wordY + Math.min(width, height) * 0.28 + 16 : height - 28, '', {
       fontFamily: PIXEL_FONT,
-      fontSize: this.isMobile ? '10px' : '14px',
+      fontSize: this.isMobile ? '14px' : '14px',
       color: '#ff4500',
       stroke: '#331100',
       strokeThickness: 1,
     }).setOrigin(0.5);
 
     // Instruction text
-    this.instructionText = this.add.text(centerX, wordY + 80, 'TYPE THE WORD!', {
+    this.instructionText = this.add.text(centerX, wordY + (this.isMobile ? 50 : 80), 'TYPE THE WORD!', {
       fontFamily: PIXEL_FONT,
-      fontSize: this.isMobile ? '8px' : '10px',
+      fontSize: this.isMobile ? '9px' : '10px',
       color: '#666666',
     }).setOrigin(0.5);
 
@@ -387,16 +391,16 @@ export class FastTyperGame extends Phaser.Scene {
     this.bonusContainer = this.add.container(centerX, wordY - 60);
 
     // Combo display
-    this.comboText = this.add.text(15, this.isMobile ? 30 : 35, '', {
+    this.comboText = this.add.text(15, this.isMobile ? 32 : 35, '', {
       fontFamily: PIXEL_FONT,
-      fontSize: this.isMobile ? '8px' : '10px',
+      fontSize: this.isMobile ? '10px' : '10px',
       color: '#ff4500',
     });
 
     // Countdown text
     this.countdownText = this.add.text(centerX, wordY, '', {
       fontFamily: PIXEL_FONT,
-      fontSize: this.isMobile ? '40px' : '60px',
+      fontSize: this.isMobile ? '48px' : '60px',
       color: '#ff4500',
       stroke: '#331100',
       strokeThickness: 4,
@@ -538,7 +542,7 @@ export class FastTyperGame extends Phaser.Scene {
   showWordCompleteAnimation(basePoints: number, timeBonus: number, comboBonus: number = 0) {
     const { width, height } = this.cameras.main;
     const centerX = width / 2;
-    const wordY = this.isMobile ? height * 0.25 : height * 0.45;
+    const wordY = this.isMobile ? height * 0.22 : height * 0.45;
 
     this.bonusContainer.removeAll(true);
 
@@ -547,7 +551,7 @@ export class FastTyperGame extends Phaser.Scene {
     // Main points text - pixel style
     const pointsText = this.add.text(0, 0, `+${totalPoints}`, {
       fontFamily: PIXEL_FONT,
-      fontSize: this.isMobile ? '14px' : '18px',
+      fontSize: this.isMobile ? '16px' : '18px',
       color: '#00ff00',
       stroke: '#003300',
       strokeThickness: 2,
@@ -562,26 +566,26 @@ export class FastTyperGame extends Phaser.Scene {
 
     this.bonusContainer.add(pointsText);
 
-    let yOffset = this.isMobile ? 20 : 26;
+    let yOffset = this.isMobile ? 22 : 26;
 
     // Speed bonus text - pixel style
     if (timeBonus > 0) {
       const bonusText = this.add.text(0, yOffset, `SPEED +${timeBonus}`, {
         fontFamily: PIXEL_FONT,
-        fontSize: this.isMobile ? '6px' : '8px',
+        fontSize: this.isMobile ? '8px' : '8px',
         color: '#ff4500',
         stroke: '#331100',
         strokeThickness: 1,
       }).setOrigin(0.5);
       this.bonusContainer.add(bonusText);
-      yOffset += this.isMobile ? 16 : 20;
+      yOffset += this.isMobile ? 18 : 20;
     }
 
     // Combo bonus text
     if (comboBonus > 0) {
       const comboText = this.add.text(0, yOffset, `${this.combo}x COMBO +${comboBonus}`, {
         fontFamily: PIXEL_FONT,
-        fontSize: this.isMobile ? '6px' : '8px',
+        fontSize: this.isMobile ? '8px' : '8px',
         color: '#ffff00',
         stroke: '#333300',
         strokeThickness: 1,
@@ -651,7 +655,7 @@ export class FastTyperGame extends Phaser.Scene {
   showRewardFoundAnimation() {
     const { width, height } = this.cameras.main;
     const centerX = width / 2;
-    const centerY = this.isMobile ? height * 0.25 : height * 0.45;
+    const centerY = this.isMobile ? height * 0.22 : height * 0.45;
 
     // Golden particle burst
     const goldColors = [0xffd700, 0xffaa00, 0xffcc33, 0xffe066, 0xffffff];
@@ -676,7 +680,7 @@ export class FastTyperGame extends Phaser.Scene {
     // "REWARD FOUND!" text
     const rewardText = this.add.text(centerX, centerY - 90, '🎁 REWARD FOUND!', {
       fontFamily: PIXEL_FONT,
-      fontSize: this.isMobile ? '10px' : '14px',
+      fontSize: this.isMobile ? '12px' : '14px',
       color: '#ffd700',
       stroke: '#664400',
       strokeThickness: 3,
@@ -835,7 +839,7 @@ export class FastTyperGame extends Phaser.Scene {
   updateTextVisuals() {
     const { width, height } = this.cameras.main;
     const centerX = width / 2;
-    const wordY = this.isMobile ? height * 0.25 : height * 0.45;
+    const wordY = this.isMobile ? height * 0.22 : height * 0.45;
 
     const typed = this.typedSoFar;
     const remaining = this.currentWord.slice(this.typedSoFar.length);
@@ -921,12 +925,13 @@ export class FastTyperGame extends Phaser.Scene {
     const endAngle = 360 * progress;
     const { width, height } = this.cameras.main;
     const centerX = width / 2;
-    const centerY = this.isMobile ? height * 0.25 : height * 0.45;
-    const radius = this.isMobile ? Math.min(width, height) * 0.18 : Math.min(width, height) * 0.28;
+    const centerY = this.isMobile ? height * 0.22 : height * 0.45;
+    // Bigger ring on mobile — use more of the available width
+    const radius = this.isMobile ? Math.min(width * 0.28, height * 0.18) : Math.min(width, height) * 0.28;
 
     this.timerGraphics.clear();
     
-    const thickness = this.isMobile ? 8 : 12;
+    const thickness = this.isMobile ? 10 : 12;
     
     // Background ring
     this.timerGraphics.lineStyle(thickness, 0x222222);
