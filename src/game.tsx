@@ -1193,6 +1193,54 @@ export const App = () => {
             </ul>
           </div>
 
+          {/* Golden Challenge Tutorial */}
+          <div className="bg-[#0a0a0a] border-2 border-[#ffd700] border-opacity-60 p-4 max-w-sm text-[7px] space-y-3">
+            <h3 className="text-[#ffd700] mb-1" style={{ textShadow: '0 0 6px #ffd700' }}>✨ GOLDEN CHALLENGES</h3>
+            <p className="text-gray-400 leading-relaxed">SPONSORED CHALLENGES WITH REAL HIDDEN REWARDS</p>
+
+            <div className="space-y-2 text-gray-300 leading-relaxed">
+              <div className="flex items-start gap-2">
+                <span className="text-[#ffd700] flex-shrink-0">1.</span>
+                <p>LOOK FOR ✨ GOLDEN CHALLENGE POSTS IN YOUR FEED OR BROWSE THEM IN THE CHALLENGE GALLERY</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-[#ffd700] flex-shrink-0">2.</span>
+                <p>TYPE WORDS LIKE NORMAL — SOME WORDS HAVE HIDDEN REWARDS ATTACHED</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-[#ffd700] flex-shrink-0">3.</span>
+                <p>WHEN YOU TYPE A REWARD WORD, YOU'LL SEE A 🎁 GOLDEN BURST ANIMATION</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-[#ffd700] flex-shrink-0">4.</span>
+                <p>REWARDS ARE SAVED TO YOUR VAULT — COUPONS, SECRETS, GIVEAWAYS & MORE</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-[#ffd700] flex-shrink-0">5.</span>
+                <p>EACH GOLDEN CHALLENGE CAN ONLY BE PLAYED ONCE — MAKE IT COUNT!</p>
+              </div>
+            </div>
+
+            <div className="border-t border-gray-800 pt-2 mt-2">
+              <p className="text-[6px] text-gray-500 mb-1">CHALLENGE TIERS:</p>
+              <div className="space-y-1 text-[6px]">
+                <p><span className="text-[#ffd700]">✨ GOLDEN</span> <span className="text-gray-500">— 15 words, 3 rewards, 7 days</span></p>
+                <p><span className="text-[#00bcd4]">💎 DIAMOND</span> <span className="text-gray-500">— 25 words, 6 rewards, 30 days + brand link</span></p>
+                <p><span className="text-[#ff4500]">🔥 LEGENDARY</span> <span className="text-gray-500">— 30 words, 10 rewards, 90 days + affiliate links</span></p>
+              </div>
+            </div>
+
+            <div className="border-t border-gray-800 pt-2 mt-2">
+              <p className="text-[6px] text-gray-500 mb-1">FOR CREATORS:</p>
+              <div className="space-y-1 text-[6px] text-gray-400">
+                <p>&gt; PURCHASE A TIER TOKEN FROM THE MENU</p>
+                <p>&gt; FILL IN YOUR BRAND, WORDS, AND REWARDS</p>
+                <p>&gt; SUBMIT FOR MOD APPROVAL</p>
+                <p>&gt; TRACK PLAYS, CLAIMS & LINK CLICKS ON YOUR DASHBOARD</p>
+              </div>
+            </div>
+          </div>
+
           <button
             onClick={() => { playButtonClick(); requestDailyChallenge(); }}
             className="mt-4 px-6 py-4 text-[12px] bg-[#ff4500] hover:bg-[#ff5722] border-2 border-[#ff6633] transition-colors"
