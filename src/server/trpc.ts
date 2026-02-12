@@ -465,6 +465,11 @@ export const appRouter = t.router({
         const challenge = await getGoldenChallengeForPost(input.postId);
         if (!challenge) return { challenge: null, isGolden: false, hasPlayed: false };
 
+        // Expired challenges are no longer playable
+        if (challenge.status !== 'active' || Date.now() >= challenge.expiresAt) {
+          return { challenge: null, isGolden: false, hasPlayed: false };
+        }
+
         // Check if user already played this challenge (once-per-user)
         const alreadyPlayed = await hasUserPlayedGolden(challenge.id);
 

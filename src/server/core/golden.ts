@@ -49,6 +49,7 @@ export interface GoldenChallengeSummary {
   claimCount: number;
   maxClaims: number;
   status: string;
+  expiresAt: number;
 }
 
 // ── Redis Keys ─────────────────────────────────────────────────────────────
@@ -536,6 +537,7 @@ function toSummary(c: GoldenChallenge): GoldenChallengeSummary {
     claimCount: c.claimCount,
     maxClaims: c.maxClaims,
     status: c.status,
+    expiresAt: c.expiresAt,
   };
 }
 

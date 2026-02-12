@@ -48,6 +48,18 @@ interface LevelSummary {
   isRemix: boolean;
 }
 
+// Format time remaining as human-readable string
+function formatTimeLeft(expiresAt: number): string {
+  const ms = expiresAt - Date.now();
+  if (ms <= 0) return 'EXPIRED';
+  const days = Math.floor(ms / 86400000);
+  const hours = Math.floor((ms % 86400000) / 3600000);
+  if (days > 0) return `${days}d ${hours}h left`;
+  const mins = Math.floor((ms % 3600000) / 60000);
+  if (hours > 0) return `${hours}h ${mins}m left`;
+  return `${mins}m left`;
+}
+
 export const App = () => {
   const [gameState, setGameState] = useState<GameState>('menu');
   const [phaserGame, setPhaserGame] = useState<Phaser.Game | null>(null);
@@ -125,6 +137,7 @@ export const App = () => {
   const [goldenChallenges, setGoldenChallenges] = useState<{
     id: string; title: string; brandName: string; wordCount: number;
     rewardCount: number; tier: string; claimCount: number; maxClaims: number;
+    expiresAt: number;
   }[]>([]);
   // Golden challenge creation form
   const [gcTitle, setGcTitle] = useState('');
@@ -193,6 +206,14 @@ export const App = () => {
     checkIsGoldenCreator();
     // Auto-start if this is a golden challenge post
     autoStartGoldenChallenge();
+  }, []);
+
+  // Client-side expiry: filter out expired golden challenges every 30s
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setGoldenChallenges(prev => prev.filter(gc => Date.now() < gc.expiresAt));
+    }, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const autoStartGoldenChallenge = async () => {
@@ -1074,7 +1095,9 @@ export const App = () => {
                     <span className="text-gray-400 truncate flex-1">
                       {gc.tier === 'diamond' ? '💎' : gc.tier === 'legendary' ? '🔥' : '✨'} {gc.title.slice(0, 20)}
                     </span>
-                    <span className="text-[#ffd700] ml-2">{gc.rewardCount} 🎁</span>
+                    <span className="text-[6px] ml-2" style={{ color: (gc.expiresAt - Date.now()) < 86400000 ? '#ff4500' : '#888' }}>
+                      ⏱ {formatTimeLeft(gc.expiresAt)}
+                    </span>
                   </div>
                 ))}
                 <p className="text-[6px] text-gray-600 text-center mt-2">TYPE WORDS TO FIND HIDDEN REWARDS</p>
@@ -1372,7 +1395,12 @@ export const App = () => {
                         </p>
                         <p className="text-[6px] text-gray-500">by {gc.brandName} · {gc.wordCount} words · {gc.rewardCount} rewards</p>
                       </div>
-                      <p className="text-[6px] text-gray-400 ml-2 flex-shrink-0">{gc.claimCount}/{gc.maxClaims}</p>
+                      <div className="text-right ml-2 flex-shrink-0">
+                        <p className="text-[6px] text-gray-400">{gc.claimCount}/{gc.maxClaims}</p>
+                        <p className="text-[5px]" style={{ color: (gc.expiresAt - Date.now()) < 86400000 ? '#ff4500' : '#888' }}>
+                          ⏱ {formatTimeLeft(gc.expiresAt)}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -2184,7 +2212,6 @@ export const App = () => {
                     const isExpired = ch.status === 'active' && Date.now() >= ch.expiresAt;
                     const statusColor = ch.status === 'pending' ? '#ffa500' : isActive ? '#00ff00' : ch.status === 'rejected' ? '#ff0000' : '#666';
                     const statusLabel = isExpired ? 'EXPIRED' : ch.status.toUpperCase();
-                    const daysLeft = isActive ? Math.max(0, Math.ceil((ch.expiresAt - Date.now()) / 86400000)) : 0;
 
                     return (
                       <div key={ch.id} className="p-3 bg-[#111] border border-gray-700">
@@ -2215,7 +2242,8 @@ export const App = () => {
                         )}
                         <div className="flex justify-between mt-1 text-[5px] text-gray-600">
                           <span>{ch.claimCount}/{ch.maxClaims} claims used</span>
-                          {isActive && <span>{daysLeft}d left</span>}
+                          {isActive && <span style={{ color: (ch.expiresAt - Date.now()) < 86400000 ? '#ff4500' : '#888' }}>⏱ {formatTimeLeft(ch.expiresAt)}</span>}
+                          {isExpired && <span style={{ color: '#ff0000' }}>EXPIRED</span>}
                         </div>
                       </div>
                     );
