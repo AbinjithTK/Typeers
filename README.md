@@ -207,6 +207,11 @@ npm run dev
 
 BSD-3-Clause
 
+## 📋 Legal
+
+- [Terms & Conditions](TERMS.md)
+- [Privacy Policy](PRIVACY.md)
+
 ## 🔗 Links
 
 - [Devvit Documentation](https://developers.reddit.com/docs)
