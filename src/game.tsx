@@ -1800,7 +1800,7 @@ export const App = () => {
                   onClick={async () => {
                     try {
                       const result = await trpc.golden.trackBrandClick.mutate({ challengeId: goldenChallenge.id });
-                      if (result.url) window.open(result.url, '_blank', 'noopener');
+                      if (result.url) navigateTo(result.url);
                     } catch { /* best effort */ }
                   }}
                   className="w-full mt-2 px-3 py-2 text-[8px] bg-[#ffd700] bg-opacity-20 border border-[#ffd700] text-[#ffd700] hover:bg-opacity-40 transition-colors text-center"

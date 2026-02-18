@@ -117,17 +117,14 @@ export async function createTournamentPost(): Promise<{ postId: string } | null>
     // Check if we already created a post for this week
     const existingPostId = await redis.get(postIdKey);
     if (existingPostId) {
-      console.log(`Tournament post already exists for ${weekKey}: ${existingPostId}`);
       return { postId: existingPostId };
     }
 
     // Step 1: Create the new tournament post FIRST (most important step)
-    console.log(`Creating tournament post for ${weekKey}...`);
     const post = await reddit.submitCustomPost({
       title: `🏆 Weekly Tournament — ${weekKey} — Compete for the top spot!`,
       entry: 'default',
     });
-    console.log(`Tournament post created: ${post.id}`);
 
     // Step 2: Store the post ID immediately so we don't create duplicates
     await redis.set(postIdKey, post.id);
@@ -139,16 +136,14 @@ export async function createTournamentPost(): Promise<{ postId: string } | null>
     // Step 4: Try to sticky and distinguish (non-critical — failures won't break anything)
     try {
       await post.sticky(1);
-      console.log('Tournament post stickied');
     } catch (e) {
-      console.error('Failed to sticky tournament post (non-critical):', e);
+      // Non-critical: sticky may fail if no permission or slots full
     }
 
     try {
       await post.distinguish();
-      console.log('Tournament post distinguished');
     } catch (e) {
-      console.error('Failed to distinguish tournament post (non-critical):', e);
+      // Non-critical: distinguish may fail if no permission
     }
 
     // Step 5: Handle previous week's post (non-critical)
@@ -159,9 +154,8 @@ export async function createTournamentPost(): Promise<{ postId: string } | null>
         try {
           const prevPost = await reddit.getPostById(prevPostId as `t3_${string}`);
           await prevPost.unsticky();
-          console.log(`Previous tournament post ${prevPostId} unstickied`);
         } catch (e) {
-          console.error('Failed to unsticky previous tournament post (non-critical):', e);
+          // Non-critical
         }
 
         // Post final results as a comment on the previous post
@@ -177,11 +171,11 @@ export async function createTournamentPost(): Promise<{ postId: string } | null>
             });
           }
         } catch (e) {
-          console.error('Failed to post final results comment (non-critical):', e);
+          // Non-critical
         }
       }
     } catch (e) {
-      console.error('Failed to handle previous week post (non-critical):', e);
+      // Non-critical
     }
 
     return { postId: post.id };

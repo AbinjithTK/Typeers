@@ -10,7 +10,6 @@ export const paymentRoutes = new Hono();
 paymentRoutes.post('/fulfill', async (c) => {
   try {
     const order = await c.req.json<Order>();
-    console.log('Payment fulfill called, order id:', order.id, 'status:', order.status);
 
     if (!order.id) {
       console.error('Payment fulfill: missing order id');
@@ -24,8 +23,6 @@ paymentRoutes.post('/fulfill', async (c) => {
       return c.json<PaymentHandlerResponse>({ success: false });
     }
 
-    console.log('Payment fulfill for user:', username, 'products:', order.products?.length ?? 0);
-
     // Process each product in the order
     for (const product of order.products ?? []) {
       const sku = product.sku;
@@ -38,10 +35,8 @@ paymentRoutes.post('/fulfill', async (c) => {
       }
 
       const credited = await creditTokens(username, tier, order.id);
-      if (credited) {
-        console.log(`Payment fulfilled: ${username} purchased ${tier} (order ${order.id})`);
-      } else {
-        console.log(`Payment already fulfilled: order ${order.id}`);
+      if (!credited) {
+        // Already fulfilled (idempotent) — not an error
       }
     }
 
@@ -76,7 +71,6 @@ paymentRoutes.post('/refund', async (c) => {
       if (!tier) continue;
 
       await refundToken(username, tier, order.id);
-      console.log(`Payment refunded: ${username} refunded ${tier} (order ${order.id})`);
     }
 
     return c.json<PaymentHandlerResponse>({ success: true });
