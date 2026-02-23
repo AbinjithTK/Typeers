@@ -56,8 +56,6 @@ import {
   hasUserPlayedGolden,
   getCreatorDashboard,
   isGoldenCreator,
-  trackBrandLinkClick,
-  trackAffiliateLinkClick,
   TIER_LIMITS,
 } from './core/golden';
 import { z } from 'zod';
@@ -424,23 +422,10 @@ export const appRouter = t.router({
           type: z.enum(['coupon', 'secret', 'giveaway', 'message']),
           value: z.string().min(1).max(200),
           description: z.string().min(1).max(100),
-          affiliateLink: z.string().max(500).optional().transform(v => {
-            if (!v || !v.trim()) return undefined;
-            const trimmed = v.trim();
-            // Auto-prefix https:// if missing protocol
-            if (!/^https?:\/\//i.test(trimmed)) return `https://${trimmed}`;
-            return trimmed;
-          }),
         })).min(1).max(10),
         tier: z.enum(['golden', 'diamond', 'legendary']).default('golden'),
         maxClaims: z.number().int().min(1).max(10000).default(100),
         durationDays: z.number().int().min(1).max(90).default(7),
-        brandLink: z.string().max(500).optional().transform(v => {
-          if (!v || !v.trim()) return undefined;
-          const trimmed = v.trim();
-          if (!/^https?:\/\//i.test(trimmed)) return `https://${trimmed}`;
-          return trimmed;
-        }),
         hideRewardCount: z.boolean().optional(),
       }))
       .mutation(async ({ input }) => {
@@ -535,7 +520,6 @@ export const appRouter = t.router({
             rewardMap,
             fullMessage: challenge.words.join(' '),
             status: challenge.status,
-            brandLink: challenge.brandLink ?? null,
             hideRewardCount: challenge.hideRewardCount ?? false,
           },
           isGolden: true,
@@ -619,22 +603,6 @@ export const appRouter = t.router({
       .input(z.object({ challengeId: z.string() }))
       .query(async ({ input }) => {
         return { hasPlayed: await hasUserPlayedGolden(input.challengeId) };
-      }),
-
-    // Track brand link click (diamond + legendary)
-    trackBrandClick: publicProcedure
-      .input(z.object({ challengeId: z.string() }))
-      .mutation(async ({ input }) => {
-        const url = await trackBrandLinkClick(input.challengeId);
-        return { url };
-      }),
-
-    // Track affiliate link click (legendary)
-    trackAffiliateClick: publicProcedure
-      .input(z.object({ challengeId: z.string(), rewardId: z.string() }))
-      .mutation(async ({ input }) => {
-        const url = await trackAffiliateLinkClick(input.challengeId, input.rewardId);
-        return { url };
       }),
 
     // Get tier limits (for client-side form validation)

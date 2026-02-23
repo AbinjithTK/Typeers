@@ -122,7 +122,6 @@ export const App = () => {
     rewardIndices: number[];
     rewardMap: Record<number, number>; // shuffledIdx → originalIdx
     fullMessage: string;
-    brandLink: string | null;
   } | null>(null);
   // Ref mirror of goldenChallenge to avoid stale closures in Phaser callbacks
   const goldenChallengeRef = useRef<typeof goldenChallenge>(null);
@@ -145,12 +144,11 @@ export const App = () => {
   const [gcTitle, setGcTitle] = useState('');
   const [gcBrandName, setGcBrandName] = useState('');
   const [gcMessage, setGcMessage] = useState('');
-  const [gcRewards, setGcRewards] = useState<{ wordIndex: number; type: string; value: string; description: string; affiliateLink?: string }[]>([]);
+  const [gcRewards, setGcRewards] = useState<{ wordIndex: number; type: string; value: string; description: string }[]>([]);
   const [gcTier, setGcTier] = useState<'golden' | 'diamond' | 'legendary'>('golden');
   const [gcMaxClaims, setGcMaxClaims] = useState(100);
   const [gcDuration, setGcDuration] = useState(7);
   const [gcPublishing, setGcPublishing] = useState(false);
-  const [gcBrandLink, setGcBrandLink] = useState('');
   const [gcHideRewardCount, setGcHideRewardCount] = useState(false);  const [purchasing, setPurchasing] = useState(false);
   const [tokenBalance, setTokenBalance] = useState<{ golden: number; diamond: number; legendary: number }>({ golden: 0, diamond: 0, legendary: 0 });
   const [isGoldenCreator, setIsGoldenCreator] = useState(false);
@@ -161,9 +159,7 @@ export const App = () => {
       wordCount: number; rewardCount: number; claimCount: number; maxClaims: number;
       createdAt: number; expiresAt: number;
       analytics: { plays: number; completions: number; totalClaims: number; claimRate: number } | null;
-      linkAnalytics: { brandLinkClicks: number; affiliateClicks: Record<string, number> } | null;
-      brandLink?: string;
-      hasAffiliateLinks: boolean;
+      postId?: string;
     }[];
     totals: { totalChallenges: number; activeChallenges: number; totalPlays: number; totalCompletions: number; totalClaims: number };
     tokenBalance: { golden: number; diamond: number; legendary: number };
@@ -843,7 +839,6 @@ export const App = () => {
     setGcMaxClaims(100);
     setGcDuration(7);
     setGcPublishing(false);
-    setGcBrandLink('');
     setGcHideRewardCount(false);
     loadTokenBalance();
     setGameState('golden-create');
@@ -880,12 +875,10 @@ export const App = () => {
           type: r.type as 'coupon' | 'secret' | 'giveaway' | 'message',
           value: r.value.trim(),
           description: r.description.trim(),
-          affiliateLink: r.affiliateLink?.trim() || undefined,
         })),
         tier: gcTier,
         maxClaims: clampedClaims,
         durationDays: clampedDuration,
-        brandLink: gcBrandLink.trim() || undefined,
         hideRewardCount: gcTier === 'legendary' ? gcHideRewardCount : undefined,
       });
       if (!result.success) {
@@ -1254,8 +1247,8 @@ export const App = () => {
               <p className="text-[6px] text-gray-500 mb-1">CHALLENGE TIERS:</p>
               <div className="space-y-1 text-[6px]">
                 <p><span className="text-[#ffd700]">✨ GOLDEN</span> <span className="text-gray-500">— 15 words, 3 rewards, 7 days</span></p>
-                <p><span className="text-[#00bcd4]">💎 DIAMOND</span> <span className="text-gray-500">— 25 words, 6 rewards, 30 days + brand link</span></p>
-                <p><span className="text-[#ff4500]">🔥 LEGENDARY</span> <span className="text-gray-500">— 30 words, 10 rewards, 90 days + affiliate links + hide reward count</span></p>
+                <p><span className="text-[#00bcd4]">💎 DIAMOND</span> <span className="text-gray-500">— 25 words, 6 rewards, 30 days + creator link</span></p>
+                <p><span className="text-[#ff4500]">🔥 LEGENDARY</span> <span className="text-gray-500">— 30 words, 10 rewards, 90 days + bonus links + mystery mode</span></p>
               </div>
             </div>
 
@@ -1795,19 +1788,6 @@ export const App = () => {
               <p className="text-[6px] text-gray-500 mt-2 text-center">
                 {goldenChallenge.tier === 'diamond' ? '💎' : goldenChallenge.tier === 'legendary' ? '🔥' : '✨'} {goldenChallenge.title}
               </p>
-              {goldenChallenge.brandLink && (
-                <button
-                  onClick={async () => {
-                    try {
-                      const result = await trpc.golden.trackBrandClick.mutate({ challengeId: goldenChallenge.id });
-                      if (result.url) navigateTo(result.url);
-                    } catch { /* best effort */ }
-                  }}
-                  className="w-full mt-2 px-3 py-2 text-[8px] bg-[#ffd700] bg-opacity-20 border border-[#ffd700] text-[#ffd700] hover:bg-opacity-40 transition-colors text-center"
-                >
-                  🔗 VISIT {goldenChallenge.brandName.toUpperCase()}
-                </button>
-              )}
             </div>
           )}
 
@@ -2048,11 +2028,6 @@ export const App = () => {
                   <input type="text" placeholder="Hidden value: CODE123..." value={reward.value}
                     onChange={(e) => { const u = [...gcRewards]; u[idx] = { ...reward, value: e.target.value }; setGcRewards(u); }}
                     className="w-full px-2 py-1 bg-[#111] border border-gray-700 text-[#00ff00] text-[8px] outline-none" style={{ fontSize: '16px' }} />
-                  {gcTier === 'legendary' && (
-                    <input type="url" placeholder="Affiliate link (optional): https://..." value={reward.affiliateLink ?? ''}
-                      onChange={(e) => { const u = [...gcRewards]; u[idx] = { ...reward, affiliateLink: e.target.value }; setGcRewards(u); }}
-                      className="w-full mt-1 px-2 py-1 bg-[#111] border border-gray-700 text-[#00bcd4] text-[8px] outline-none" style={{ fontSize: '16px' }} />
-                  )}
                 </div>
               ))}
             </div>
@@ -2066,11 +2041,7 @@ export const App = () => {
                     setGcTier(t);
                     setGcMaxClaims(limits.c);
                     setGcDuration(limits.d);
-                    // Clear brand link if downgrading to golden
-                    if (t === 'golden') { setGcBrandLink(''); }
-                    // Clear affiliate links if not legendary
                     if (t !== 'legendary') {
-                      setGcRewards(gcRewards.map(({ affiliateLink: _, ...rest }) => rest));
                       setGcHideRewardCount(false);
                     }
                   }}
@@ -2078,25 +2049,11 @@ export const App = () => {
                     {t === 'golden' ? '✨ 25g' : t === 'diamond' ? '💎 100g' : '🔥 500g'}
                     <br />{t.toUpperCase()}
                     <br /><span className="text-[5px]">{limits.w}w · {limits.r}r · {limits.c}c · {limits.d}d</span>
-                    {t !== 'golden' && <br />}
-                    {t === 'diamond' && <span className="text-[5px]">+ BRAND LINK</span>}
-                    {t === 'legendary' && <span className="text-[5px]">+ LINKS + AFFILIATE</span>}
                     {tokenBalance[t] > 0 && <span className="text-[6px]"> ({tokenBalance[t]})</span>}
                   </button>
                 );
               })}
             </div>
-
-            {/* Brand Link (diamond + legendary) */}
-            {(gcTier === 'diamond' || gcTier === 'legendary') && (
-              <div>
-                <label className="text-[7px] text-gray-500 block mb-1">🔗 BRAND LINK (SHOWN AFTER GAME)</label>
-                <input type="url" value={gcBrandLink} onChange={(e) => setGcBrandLink(e.target.value)} placeholder="https://yourbrand.com"
-                  maxLength={500}
-                  className="w-full px-3 py-2 bg-[#111] border-2 border-gray-700 focus:border-[#00bcd4] text-[#00bcd4] text-[9px] outline-none" style={{ fontFamily: '"Press Start 2P", monospace', fontSize: '16px' }} />
-                <p className="text-[5px] text-gray-600 mt-1">UTM TRACKING AUTO-APPENDED · CLICKS TRACKED IN DASHBOARD</p>
-              </div>
-            )}
 
             {/* Hide reward count toggle (legendary only) */}
             {gcTier === 'legendary' && (
@@ -2317,19 +2274,6 @@ export const App = () => {
                             <span className="text-gray-400">✓ {ch.analytics.completions} done</span>
                             <span className="text-[#ffd700]">🎁 {ch.analytics.totalClaims} claims</span>
                           </div>
-                        )}
-                        {ch.linkAnalytics && (
-                          <div className="flex gap-3 mt-1 text-[6px]">
-                            <span className="text-[#00bcd4]">🔗 {ch.linkAnalytics.brandLinkClicks} link clicks</span>
-                            {Object.keys(ch.linkAnalytics.affiliateClicks).length > 0 && (
-                              <span className="text-[#ff69b4]">
-                                📎 {Object.values(ch.linkAnalytics.affiliateClicks).reduce((a, b) => a + b, 0)} affiliate clicks
-                              </span>
-                            )}
-                          </div>
-                        )}
-                        {ch.brandLink && (
-                          <p className="text-[5px] text-[#00bcd4] mt-1 truncate">🔗 {ch.brandLink}</p>
                         )}
                         <div className="flex justify-between mt-1 text-[5px] text-gray-600">
                           <span>{ch.claimCount}/{ch.maxClaims} claims used</span>

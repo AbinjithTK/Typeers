@@ -3,33 +3,33 @@
   "products": [
     {
       "sku": "golden_tier",
-      "displayName": "Golden Challenge",
-      "description": "Create a Golden Challenge with hidden rewards for your community",
+      "displayName": "Golden Challenge Token",
+      "description": "Create a premium typing challenge with up to 3 hidden rewards for your community",
       "price": 25,
       "metadata": {
-        "category": "golden-challenge",
+        "category": "challenge-creation",
         "tier": "golden"
       },
       "accountingType": "CONSUMABLE"
     },
     {
       "sku": "diamond_tier",
-      "displayName": "Diamond Challenge",
-      "description": "Create a Diamond Challenge with more words and more rewards",
+      "displayName": "Diamond Challenge Token",
+      "description": "Create an extended typing challenge with up to 6 hidden rewards and a creator link",
       "price": 100,
       "metadata": {
-        "category": "golden-challenge",
+        "category": "challenge-creation",
         "tier": "diamond"
       },
       "accountingType": "CONSUMABLE"
     },
     {
       "sku": "legendary_tier",
-      "displayName": "Legendary Challenge",
-      "description": "Create a Legendary Challenge with maximum impact and features",
+      "displayName": "Legendary Challenge Token",
+      "description": "Create the ultimate typing challenge with up to 10 hidden rewards, bonus links, and mystery mode",
       "price": 500,
       "metadata": {
-        "category": "golden-challenge",
+        "category": "challenge-creation",
         "tier": "legendary"
       },
       "accountingType": "CONSUMABLE"

@@ -13,7 +13,7 @@ Typeers offers optional in-app purchases using Reddit Gold:
 - **Diamond Challenge Token** (100 Gold) — Create a Diamond Challenge
 - **Legendary Challenge Token** (500 Gold) — Create a Legendary Challenge
 
-All purchases are consumable tokens used to create sponsored typing challenges. Tokens are non-transferable and tied to your Reddit account.
+All purchases are consumable tokens used to create community reward challenges. Tokens are non-transferable and tied to your Reddit account.
 
 ## 3. Refunds
 

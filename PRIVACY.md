@@ -13,7 +13,7 @@ All data is stored using Reddit's built-in Redis storage and is associated with 
 - **Gameplay data**: Scores, words typed, accuracy, WPM, max combo, and game completion status.
 - **Leaderboard data**: Your best scores for daily challenges and weekly tournaments.
 - **User-generated content**: Custom levels you create (title, words, creator name).
-- **Golden Challenge data**: If you create a challenge — title, brand name, message, rewards, tier, and analytics (play count, completion rate, claim count, link clicks). If you play a challenge — whether you played it and which rewards you claimed.
+- **Golden Challenge data**: If you create a challenge — title, creator name, message, rewards, tier, and analytics (play count, completion rate, claim count). If you play a challenge — whether you played it and which rewards you claimed.
 - **Vault data**: Rewards you have claimed from Golden Challenges.
 - **Token balance**: Your purchased challenge tokens (golden, diamond, legendary).
 - **Purchase records**: Order IDs for payment idempotency (no financial details are stored by the app — all payment processing is handled by Reddit).
@@ -39,7 +39,7 @@ All data is stored using Reddit's built-in Redis storage and is associated with 
 
 We do not share your data with any third parties. All data remains within Reddit's infrastructure.
 
-Golden Challenge creators can see aggregate analytics (total plays, completions, claims, link clicks) but cannot see individual player identities or personal data.
+Golden Challenge creators can see aggregate analytics (total plays, completions, claims) but cannot see individual player identities or personal data.
 
 ## 6. Data Retention
 

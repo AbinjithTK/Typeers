@@ -7,7 +7,6 @@ export interface Reward {
   type: 'coupon' | 'secret' | 'giveaway' | 'message';
   value: string;       // the actual code/text/secret
   description: string; // what the player sees: "10% off at XYZ"
-  affiliateLink?: string; // legendary tier only — tracked affiliate link
 }
 
 export interface GoldenChallenge {
@@ -25,7 +24,6 @@ export interface GoldenChallenge {
   status: 'pending' | 'approved' | 'active' | 'expired' | 'rejected';
   tier: 'golden' | 'diamond' | 'legendary';
   postId?: string;
-  brandLink?: string;       // diamond + legendary — shown after game completion
   hideRewardCount?: boolean; // legendary only — hides reward count from players
 }
 
@@ -68,15 +66,13 @@ const TOKEN_BALANCE_KEY = (username: string) => `golden:tokens:${username}`;
 const ORDER_KEY = (orderId: string) => `golden:order:${orderId}`;
 const GOLDEN_PLAYED_KEY = (challengeId: string, username: string) => `golden:played:${challengeId}:${username}`;
 const GOLDEN_BY_CREATOR = (username: string) => `golden:creator:${username}`;
-const LINK_CLICKS = (challengeId: string) => `golden:clicks:${challengeId}`;
-const AFFILIATE_CLICKS = (challengeId: string, rewardId: string) => `golden:aff:${challengeId}:${rewardId}`;
 
 // ── Tier Limits ────────────────────────────────────────────────────────────
 
 export const TIER_LIMITS = {
-  golden:    { maxWords: 15, maxRewards: 3,  maxClaims: 100,  maxDays: 7,  brandLink: false, affiliateLinks: false },
-  diamond:   { maxWords: 25, maxRewards: 6,  maxClaims: 500,  maxDays: 30, brandLink: true,  affiliateLinks: false },
-  legendary: { maxWords: 30, maxRewards: 10, maxClaims: 2000, maxDays: 90, brandLink: true,  affiliateLinks: true  },
+  golden:    { maxWords: 15, maxRewards: 3,  maxClaims: 100,  maxDays: 7  },
+  diamond:   { maxWords: 25, maxRewards: 6,  maxClaims: 500,  maxDays: 30 },
+  legendary: { maxWords: 30, maxRewards: 10, maxClaims: 2000, maxDays: 90 },
 } as const;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -99,13 +95,12 @@ function generateVaultItemId(): string {
 export async function createGoldenChallenge(opts: {
   title: string;
   brandName: string;
-  message: string;           // full brand message — will be split into words
-  rewards: { wordIndex: number; type: Reward['type']; value: string; description: string; affiliateLink?: string }[];
+  message: string;           // custom message — will be split into words
+  rewards: { wordIndex: number; type: Reward['type']; value: string; description: string }[];
   tier: GoldenChallenge['tier'];
   maxClaims: number;
   durationDays: number;
   subredditName: string;
-  brandLink?: string;        // diamond + legendary only
   hideRewardCount?: boolean;  // legendary only — hides reward count from players
 }): Promise<{ success: boolean; message: string; challengeId?: string; postId?: string }> {
   try {
@@ -147,14 +142,6 @@ export async function createGoldenChallenge(opts: {
         description: r.description.trim(),
       };
 
-      // Affiliate links — legendary only
-      if (limits.affiliateLinks && r.affiliateLink?.trim()) {
-        const aLink = r.affiliateLink.trim().slice(0, 500);
-        if (/^https?:\/\/.+/i.test(aLink)) {
-          reward.affiliateLink = aLink;
-        }
-      }
-
       rewardWords[r.wordIndex] = reward;
       rewardCount++;
     }
@@ -171,16 +158,6 @@ export async function createGoldenChallenge(opts: {
     const now = Date.now();
     const expiresAt = now + clampedDays * 24 * 60 * 60 * 1000;
 
-    // Brand link — diamond + legendary only
-    let brandLink: string | undefined;
-    if (limits.brandLink && opts.brandLink?.trim()) {
-      const link = opts.brandLink.trim().slice(0, 500);
-      // Validate it looks like a URL
-      if (/^https?:\/\/.+/i.test(link)) {
-        brandLink = link;
-      }
-    }
-
     const challenge: GoldenChallenge = {
       id,
       title: opts.title.trim().slice(0, 80),
@@ -195,7 +172,6 @@ export async function createGoldenChallenge(opts: {
       claimCount: 0,
       status: 'pending', // needs mod approval
       tier: opts.tier,
-      brandLink,
       hideRewardCount: opts.tier === 'legendary' ? (opts.hideRewardCount ?? false) : false,
     };
 
@@ -569,9 +545,7 @@ export interface CreatorDashboardChallenge {
   createdAt: number;
   expiresAt: number;
   analytics: { plays: number; completions: number; totalClaims: number; claimRate: number } | null;
-  linkAnalytics: { brandLinkClicks: number; affiliateClicks: Record<string, number> } | null;
-  brandLink?: string;
-  hasAffiliateLinks: boolean;
+  postId?: string;
 }
 
 export interface CreatorDashboard {
@@ -626,10 +600,7 @@ export async function getCreatorDashboard(): Promise<CreatorDashboard | null> {
         createdAt: challenge.createdAt,
         expiresAt: challenge.expiresAt,
         analytics,
-        linkAnalytics: (challenge.brandLink || Object.values(challenge.rewardWords).some(r => r.affiliateLink))
-          ? await getLinkAnalytics(challenge.id) : null,
-        brandLink: challenge.brandLink,
-        hasAffiliateLinks: Object.values(challenge.rewardWords).some(r => !!r.affiliateLink),
+        postId: challenge.postId,
       });
     }
 
@@ -761,93 +732,4 @@ export async function refundToken(username: string, tier: TokenTier, orderId: st
   }
 }
 
-// ── Link Click Tracking ────────────────────────────────────────────────────
 
-/**
- * Track a brand link click. Returns the URL with UTM params appended.
- */
-export async function trackBrandLinkClick(challengeId: string): Promise<string | null> {
-  try {
-    const challenge = await getGoldenChallenge(challengeId);
-    if (!challenge || !challenge.brandLink) return null;
-
-    // Increment click counter
-    const key = LINK_CLICKS(challengeId);
-    const current = parseInt((await redis.get(key)) ?? '0');
-    await redis.set(key, (current + 1).toString());
-
-    // Append UTM params
-    return appendUtm(challenge.brandLink, challengeId);
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Track an affiliate link click on a specific reward.
- */
-export async function trackAffiliateLinkClick(challengeId: string, rewardId: string): Promise<string | null> {
-  try {
-    const challenge = await getGoldenChallenge(challengeId);
-    if (!challenge) return null;
-
-    // Find the reward
-    const reward = Object.values(challenge.rewardWords).find(r => r.id === rewardId);
-    if (!reward?.affiliateLink) return null;
-
-    // Increment affiliate click counter
-    const key = AFFILIATE_CLICKS(challengeId, rewardId);
-    const current = parseInt((await redis.get(key)) ?? '0');
-    await redis.set(key, (current + 1).toString());
-
-    // Also increment total brand link clicks
-    const totalKey = LINK_CLICKS(challengeId);
-    const totalCurrent = parseInt((await redis.get(totalKey)) ?? '0');
-    await redis.set(totalKey, (totalCurrent + 1).toString());
-
-    return appendUtm(reward.affiliateLink, challengeId, rewardId);
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Get link click analytics for a challenge (creator dashboard).
- */
-export async function getLinkAnalytics(challengeId: string): Promise<{
-  brandLinkClicks: number;
-  affiliateClicks: Record<string, number>; // rewardId → clicks
-}> {
-  try {
-    const brandLinkClicks = parseInt((await redis.get(LINK_CLICKS(challengeId))) ?? '0');
-
-    const challenge = await getGoldenChallenge(challengeId);
-    const affiliateClicks: Record<string, number> = {};
-    if (challenge) {
-      for (const reward of Object.values(challenge.rewardWords)) {
-        if (reward.affiliateLink) {
-          const clicks = parseInt((await redis.get(AFFILIATE_CLICKS(challengeId, reward.id))) ?? '0');
-          affiliateClicks[reward.id] = clicks;
-        }
-      }
-    }
-
-    return { brandLinkClicks, affiliateClicks };
-  } catch {
-    return { brandLinkClicks: 0, affiliateClicks: {} };
-  }
-}
-
-function appendUtm(url: string, challengeId: string, rewardId?: string): string {
-  try {
-    const u = new URL(url);
-    u.searchParams.set('utm_source', 'typeers');
-    u.searchParams.set('utm_medium', 'golden_challenge');
-    u.searchParams.set('utm_campaign', challengeId);
-    if (rewardId) u.searchParams.set('utm_content', rewardId);
-    return u.toString();
-  } catch {
-    // If URL parsing fails, return as-is
-    return url;
-  }
-}
