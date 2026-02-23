@@ -6,7 +6,7 @@ A Reddit-powered speed typing game — type fast, beat the clock, and climb the 
 
 ## 🎮 What is Typeers?
 
-Typeers is a retro arcade-style typing game built natively on Reddit using Devvit. Words come directly from Reddit — pulled from subreddit posts, comments, and community-created levels. It features golden challenges with real rewards, weekly tournaments, and a full creator economy.
+Typeers is a retro arcade-style typing game built natively on Reddit using Devvit. Words come directly from Reddit — pulled from subreddit posts, comments, and community-created levels. It features community reward challenges, weekly tournaments, and a full creator economy.
 
 ### Core Features
 
@@ -34,14 +34,14 @@ Typeers is a retro arcade-style typing game built natively on Reddit using Devvi
   - Combo multipliers (up to 5x) and time bonuses
   - Personal records and score sharing via comments
 
-### ✨ Golden Challenges (Gamified Advertising)
+### ✨ Golden Challenges (Community Reward Events)
 
-A tiered sponsored challenge system where brands/creators embed hidden rewards inside typing challenges. Players type words to discover and claim rewards.
+A tiered challenge system where creators embed hidden rewards inside typing challenges. Players type words to discover and claim rewards like coupons, secrets, giveaways, and messages.
 
 - **Three Tiers:**
   - 🥇 Golden — 15 words, 3 rewards, 100 claims, 7-day duration
-  - 💎 Diamond — 25 words, 6 rewards, 500 claims, 30 days, brand link with click tracking
-  - 🏆 Legendary — 30 words, 10 rewards, 2000 claims, 90 days, brand link + per-reward affiliate links
+  - 💎 Diamond — 25 words, 6 rewards, 500 claims, 30 days
+  - 🏆 Legendary — 30 words, 10 rewards, 2000 claims, 90 days, hidden reward count
 
 - **Reward Types:** Coupons, secrets, giveaways, messages
 - **Once-Per-User:** Each player can only play a golden challenge once
@@ -49,7 +49,7 @@ A tiered sponsored challenge system where brands/creators embed hidden rewards i
 - **Shuffled Delivery:** Reward words are randomized each play for fairness
 - **Player Vault:** Claimed rewards stored in a personal vault with redeem tracking
 
-- **Creator Dashboard:** Challenge analytics (plays, completions, claims, claim rate), link click counts, affiliate tracking
+- **Creator Dashboard:** Challenge analytics (plays, completions, claims, claim rate)
 - **Payment Bridge:** Reddit Gold purchases via `products.json` → token credits → challenge creation. Supports purchase, fulfillment, and refund flows.
 
 ### 🛡️ Mod Approval System
@@ -57,7 +57,7 @@ A tiered sponsored challenge system where brands/creators embed hidden rewards i
 Golden challenges require moderator approval before going live. Approval uses Reddit's native menu actions (not in-game UI):
 
 1. Creator purchases a tier token via Reddit Gold
-2. Creator fills out the in-game creation form (title, brand, words, rewards, links)
+2. Creator fills out the in-game creation form (title, name, words, rewards)
 3. Challenge enters "pending" status
 4. Moderators click "🛡️ Manage Golden Challenges" from the subreddit menu
 5. A native Reddit form shows all pending/active challenges with approve/reject options
@@ -105,9 +105,8 @@ devvit install typeers <your-subreddit>
 
 1. Open the game menu → "✨ CREATE GOLDEN CHALLENGE"
 2. Purchase a tier token (Golden/Diamond/Legendary) via Reddit Gold
-3. Fill in title, brand name, words, reward words with descriptions
-4. Diamond/Legendary: add brand link and affiliate links
-5. Submit for mod approval → once approved, a post is created automatically
+3. Fill in title, creator name, words, reward words with descriptions
+4. Submit for mod approval → once approved, a post is created automatically
 
 ### Moderator Actions
 
@@ -156,7 +155,7 @@ typeers/
 │   │   ├── context.ts        # Request context
 │   │   ├── core/
 │   │   │   ├── game.ts       # Word generation, scoring, stats
-│   │   │   ├── golden.ts     # Golden challenges, rewards, payments, analytics
+│   │   │   ├── golden.ts     # Golden challenges, rewards, payments
 │   │   │   ├── tournament.ts # Weekly tournaments
 │   │   │   ├── levels.ts     # UGC levels, gallery, ratings
 │   │   │   ├── post.ts       # Post creation
